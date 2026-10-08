@@ -757,16 +757,29 @@ document.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey)return
 });
 startBoot();
 
-// Touch controls dispatch the same keyboard actions as desktop; no duplicate game logic.
+// On-screen navigation uses the same screen transitions as the keyboard.
+// Use direct screen handling for BACK instead of a synthetic Escape event.
 const mobileBack = document.getElementById('mobile-back');
 const mobileEnter = document.getElementById('mobile-enter');
 function mobileKey(key){ document.dispatchEvent(new KeyboardEvent('keydown', {key,bubbles:true,cancelable:true})); }
-mobileBack.addEventListener('click',()=>mobileKey('Escape'));
+function navigateBack(){
+  if(screen==='boot' || screen==='menu' || screen==='glitch') return;
+  if(screen==='profileFile'){ showProfile(); return; }
+  if(screen==='historyFile'){ showHistory(); return; }
+  if(screen==='skillFile'){ showSkills(); return; }
+  if(screen==='classifiedFile' || screen==='classifiedWrong' || screen==='classifiedQuiz'){ showClassified(); return; }
+  if(screen==='councilFile'){ showCouncil(); return; }
+  if(screen==='simulationStage' || screen==='simulationResult'){ showSimulations(); return; }
+  showMenu(); // directory screens and legacy details
+}
+mobileBack.addEventListener('click',navigateBack);
 mobileEnter.addEventListener('click',()=>mobileKey('Enter'));
-const mobileObserver = new MutationObserver(()=>{
+function updateMobileControls(){
   mobileBack.disabled = screen==='boot' || screen==='menu' || screen==='glitch';
   mobileEnter.disabled = screen==='glitch';
   mobileEnter.textContent = typing ? '[ ENTER ] SKIP' : screen==='boot' ? '[ ENTER ] START' : '[ ENTER ] CONTINUE';
-});
+}
+const mobileObserver = new MutationObserver(updateMobileControls);
 mobileObserver.observe(document.getElementById('output'),{childList:true,characterData:true,subtree:true});
 mobileObserver.observe(document.getElementById('options'),{childList:true,subtree:true});
+updateMobileControls();
