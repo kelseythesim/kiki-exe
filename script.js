@@ -756,3 +756,17 @@ document.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey)return
  }
 });
 startBoot();
+
+// Touch controls dispatch the same keyboard actions as desktop; no duplicate game logic.
+const mobileBack = document.getElementById('mobile-back');
+const mobileEnter = document.getElementById('mobile-enter');
+function mobileKey(key){ document.dispatchEvent(new KeyboardEvent('keydown', {key,bubbles:true,cancelable:true})); }
+mobileBack.addEventListener('click',()=>mobileKey('Escape'));
+mobileEnter.addEventListener('click',()=>mobileKey('Enter'));
+const mobileObserver = new MutationObserver(()=>{
+  mobileBack.disabled = screen==='boot' || screen==='menu' || screen==='glitch';
+  mobileEnter.disabled = screen==='glitch';
+  mobileEnter.textContent = typing ? '[ ENTER ] SKIP' : screen==='boot' ? '[ ENTER ] START' : '[ ENTER ] CONTINUE';
+});
+mobileObserver.observe(document.getElementById('output'),{childList:true,characterData:true,subtree:true});
+mobileObserver.observe(document.getElementById('options'),{childList:true,subtree:true});
